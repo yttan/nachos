@@ -428,40 +428,13 @@ public class KThread {
 		private int which;
 	}
 	
-	/**
-	 * Joiner and Joinee class
-	 */
-	private static class Joinee implements Runnable {
-		public void run() {
-			System.out.println("Joinee thread running");			
-		}	
-	}
-	private static class Joiner implements Runnable {
-		private KThread joinee;
-		Joiner(KThread joinee){
-			this.joinee = joinee;
-		}
-		public void run() {
-			System.out.println("before join() "+currentThread.getName()+" running");
-			joinee.join();
-			System.out.println("after joinee joined and finished");
-			System.out.println("Joiner:after joining"+currentThread.getName());
-		}	
-	}
+	
 	/**
 	 * Tests whether this module is working.
 	 */
 	public static void selfTest() {
 		Lib.debug(dbgThread, "Enter KThread.selfTest");
-		long ticks;
-		Alarm test = new Alarm();
-		for (int i =0;i<5;i++)
-		{
-			ticks=(long)(Math.random()*1000000);
-			System.out.println("I'm about to wait for " + ticks + " ticks.");
-			test.waitUntil(ticks);
-			System.out.println(ticks + " ticks later, I'm done waiting!");
-		}
+		
 	}
 
 	private static final char dbgThread = 't';
