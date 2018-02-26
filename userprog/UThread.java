@@ -1,3 +1,4 @@
+/*extends kthread so can use kthread functions */
 package nachos.userprog;
 
 import nachos.machine.*;
@@ -59,7 +60,7 @@ public class UThread extends KThread {
 
 	/**
 	 * Storage for the user register set.
-	 * 
+	 *
 	 * <p>
 	 * A thread capable of running user code actually has <i>two</i> sets of CPU
 	 * registers: one for its state while executing user code, and one for its

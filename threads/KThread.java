@@ -1,5 +1,5 @@
 package nachos.threads;
-
+import java.util.*;
 import nachos.machine.*;
 
 /**
@@ -412,28 +412,95 @@ public class KThread {
 		Lib.assertTrue(this == currentThread);
 	}
 
-	private static class PingTest implements Runnable {
-		PingTest(int which) {
+	private static class PingTest implements Runnable  
+	    {  
+	        Lock a=null,b=null;  
+	        int name;  
+	        PingTest(Lock A,Lock B,int x)  
+	        {  
+	            a=A;b=B;name=x;  
+	        }  
+	        public void run() {  
+	            System.out.println("Thread "+name+" starts.");  
+	            if(b!=null)  
+	            {  
+	                System.out.println("Thread "+name+" waits for Lock b.");  
+	                b.acquire();  
+	                System.out.println("Thread "+name+" gets Lock b.");  
+	            }  
+	            if(a!=null)  
+	            {  
+	                System.out.println("Thread "+name+" waits for Lock a.");  
+	                a.acquire();  
+	                System.out.println("Thread "+name+" gets Lock a.");  
+	            }  
+	            KThread.yield();  
+	            boolean intStatus = Machine.interrupt().disable();  
+	            System.out.println("Thread "+name+" has priority "+ThreadedKernel.scheduler.getEffectivePriority()+".");  
+	            Machine.interrupt().restore(intStatus);  
+	            KThread.yield();  
+	            if(b!=null) b.release();  
+	            if(a!=null) a.release();  
+	            System.out.println("Thread "+name+" finishs.");  
+	              
+	        }  
+	    }  
+	
+	private static class PingAlarmTest implements Runnable {
+		PingAlarmTest(int which, Alarm alarm) {
 			this.which = which;
+			this.alarm = alarm;
+			
 		}
+		Alarm alarm;
 
 		public void run() {
-			for (int i = 0; i < 5; i++) {
-				System.out.println("*** thread " + which + " looped " + i
-						+ " times");
-				currentThread.yield();
-			}
+			System.out.println("thread " + which + " started.");
+			alarm.waitUntil(which);
+			System.out.println("Current Time: " + Machine.timer().getTime());
+			System.out.println("thread " + which + " ran.");
+			
 		}
 
 		private int which;
 	}
-	
-	
 	/**
 	 * Tests whether this module is working.
 	 */
 	public static void selfTest() {
-		Lib.debug(dbgThread, "Enter KThread.selfTest");
+		Lock a=new Lock();  
+	        Lock b=new Lock();  
+	          
+	        LinkedList<KThread> qq=new LinkedList<KThread>();  
+	        for(int i=1;i<=5;i++)  
+	        {  
+	            KThread kk=new KThread(new PingTest(null,null,i));  
+	            qq.add(kk);  
+	            kk.setName("Thread-"+i).fork();  
+	        }  
+	        for(int i=6;i<=10;i++)  
+	        {  
+	            KThread kk=new KThread(new PingTest(a,null,i));  
+	            qq.add(kk);  
+	            kk.setName("Thread-"+i).fork();  
+	        }  
+	        for(int i=11;i<=15;i++)  
+	        {  
+	            KThread kk=new KThread(new PingTest(a,b,i));  
+	            qq.add(kk);  
+	            kk.setName("Thread-"+i).fork();  
+	        }  
+	        KThread.yield();  
+	        Iterator it=qq.iterator();  
+	        int pp=0;  
+	        while(it.hasNext())  
+	        {  
+	            boolean intStatus = Machine.interrupt().disable();  
+	            ThreadedKernel.scheduler.setPriority((KThread)it.next(),pp+1);  
+	            Machine.interrupt().restore(intStatus);  
+	            pp=(pp+1)%6+1;  
+	        }  
+	      
 		
 	}
 

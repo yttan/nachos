@@ -10,11 +10,11 @@ import java.io.EOFException;
  * Encapsulates the state of a user process that is not contained in its user
  * thread (or threads). This includes its address translation state, a file
  * table, and information about the program being executed.
- * 
+ *
  * <p>
  * This class is extended by other classes to support additional functionality
  * (such as additional syscalls).
- * 
+ *
  * @see nachos.vm.VMProcess
  * @see nachos.network.NetProcess
  */
@@ -33,7 +33,7 @@ public class UserProcess {
 	 * Allocate and return a new process of the correct class. The class name is
 	 * specified by the <tt>nachos.conf</tt> key
 	 * <tt>Kernel.processClassName</tt>.
-	 * 
+	 *
 	 * @return a new process of the correct class.
 	 */
 	public static UserProcess newUserProcess() {
@@ -43,7 +43,7 @@ public class UserProcess {
 	/**
 	 * Execute the specified program with the specified arguments. Attempts to
 	 * load the program, and then forks a thread to run it.
-	 * 
+	 *
 	 * @param name the name of the file containing the executable.
 	 * @param args the arguments to pass to the executable.
 	 * @return <tt>true</tt> if the program was successfully executed.
@@ -78,7 +78,7 @@ public class UserProcess {
 	 * the null terminator, and convert it to a <tt>java.lang.String</tt>,
 	 * without including the null terminator. If no null terminator is found,
 	 * returns <tt>null</tt>.
-	 * 
+	 *
 	 * @param vaddr the starting virtual address of the null-terminated string.
 	 * @param maxLength the maximum number of characters in the string, not
 	 * including the null terminator.
@@ -103,7 +103,7 @@ public class UserProcess {
 	/**
 	 * Transfer data from this process's virtual memory to all of the specified
 	 * array. Same as <tt>readVirtualMemory(vaddr, data, 0, data.length)</tt>.
-	 * 
+	 *
 	 * @param vaddr the first byte of virtual memory to read.
 	 * @param data the array where the data will be stored.
 	 * @return the number of bytes successfully transferred.
@@ -118,7 +118,7 @@ public class UserProcess {
 	 * <i>not</i> destroy the current process if an error occurs, but instead
 	 * should return the number of bytes successfully copied (or zero if no data
 	 * could be copied).
-	 * 
+	 *
 	 * @param vaddr the first byte of virtual memory to read.
 	 * @param data the array where the data will be stored.
 	 * @param offset the first byte to write in the array.
@@ -145,7 +145,7 @@ public class UserProcess {
 	/**
 	 * Transfer all data from the specified array to this process's virtual
 	 * memory. Same as <tt>writeVirtualMemory(vaddr, data, 0, data.length)</tt>.
-	 * 
+	 *
 	 * @param vaddr the first byte of virtual memory to write.
 	 * @param data the array containing the data to transfer.
 	 * @return the number of bytes successfully transferred.
@@ -160,7 +160,7 @@ public class UserProcess {
 	 * <i>not</i> destroy the current process if an error occurs, but instead
 	 * should return the number of bytes successfully copied (or zero if no data
 	 * could be copied).
-	 * 
+	 *
 	 * @param vaddr the first byte of virtual memory to write.
 	 * @param data the array containing the data to transfer.
 	 * @param offset the first byte to transfer from the array.
@@ -189,7 +189,7 @@ public class UserProcess {
 	 * prepare to pass it the specified arguments. Opens the executable, reads
 	 * its header information, and copies sections and arguments into this
 	 * process's virtual memory.
-	 * 
+	 *
 	 * @param name the name of the file containing the executable.
 	 * @param args the arguments to pass to the executable.
 	 * @return <tt>true</tt> if the executable was successfully loaded.
@@ -275,7 +275,7 @@ public class UserProcess {
 	 * Allocates memory for this process, and loads the COFF sections into
 	 * memory. If this returns successfully, the process will definitely be run
 	 * (this is the last step in process initialization that can fail).
-	 * 
+	 *
 	 * @return <tt>true</tt> if the sections were successfully loaded.
 	 */
 	protected boolean loadSections() {
@@ -351,7 +351,7 @@ public class UserProcess {
 	/**
 	 * Handle a syscall exception. Called by <tt>handleException()</tt>. The
 	 * <i>syscall</i> argument identifies which syscall the user executed:
-	 * 
+	 *
 	 * <table>
 	 * <tr>
 	 * <td>syscall#</td>
@@ -401,7 +401,7 @@ public class UserProcess {
 	 * <td><tt>int  unlink(char *name);</tt></td>
 	 * </tr>
 	 * </table>
-	 * 
+	 *
 	 * @param syscall the syscall number.
 	 * @param a0 the first syscall argument.
 	 * @param a1 the second syscall argument.
@@ -412,7 +412,9 @@ public class UserProcess {
 	public int handleSyscall(int syscall, int a0, int a1, int a2, int a3) {
 		switch (syscall) {
 		case syscallHalt:
-			return handleHalt();
+		return handleHalt();
+		case syscallExec:
+			//return handleHalt();
 
 		default:
 			Lib.debug(dbgProcess, "Unknown syscall " + syscall);
@@ -425,7 +427,7 @@ public class UserProcess {
 	 * Handle a user exception. Called by <tt>UserKernel.exceptionHandler()</tt>
 	 * . The <i>cause</i> argument identifies which exception occurred; see the
 	 * <tt>Processor.exceptionZZZ</tt> constants.
-	 * 
+	 *
 	 * @param cause the user exception that occurred.
 	 */
 	public void handleException(int cause) {

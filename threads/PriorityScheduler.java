@@ -147,8 +147,14 @@ public class PriorityScheduler extends Scheduler {
 		public KThread nextThread() {
 			Lib.assertTrue(Machine.interrupt().disabled());
 			// implement me
+			if (resource!=null){
+				resource.HoldingResources.remove(this);
+			}
 			ThreadState nextthreadstate = pickNextThread();
-			if(nextthreadstate != null) return nextthreadstate.thread;
+			if(nextthreadstate != null){
+				nextthreadstate.acquire(this);
+				 return nextthreadstate.thread;
+			 }
 			else return null;
 		}
 
@@ -161,28 +167,30 @@ public class PriorityScheduler extends Scheduler {
 		protected ThreadState pickNextThread() {
 			// implement me
 
-			if(waitQueue.isEmpty()) return null;
+			//if(waitQueue.isEmpty()) return null;
 
-			ThreadState maxthread = waitQueue.peek();
+			ThreadState maxthread = null;
 
       int maxpriority = -1;
 			for(ThreadState threadstate : waitQueue)
 			{
-				if(threadstate.getEffectivePriority() == maxpriority)
+				/*if(threadstate.getEffectivePriority() == maxpriority)
 				{
-					if(threadstate.age >= maxthread.age)
+					if(threadstate.age > maxthread.age)
 					{
 						maxthread = threadstate;
 						maxpriority = threadstate.getEffectivePriority();
 					}
 				}
-				else if(threadstate.getEffectivePriority() > maxpriority)
+				*/
+				if(threadstate.getEffectivePriority() > maxpriority)
 				{
 					maxthread = threadstate;
 					maxpriority = threadstate.getEffectivePriority();
 				}
 			}
-			waitQueue.remove(maxthread);
+
+			//waitQueue.remove(maxthread);
 			return maxthread;
 
 		}
@@ -238,7 +246,16 @@ public class PriorityScheduler extends Scheduler {
 		 */
 		public int getEffectivePriority() {
 			// implement me
-			return effectivePriority;
+			int effectivePriority = this.priority;
+	    for(PriorityQueue queue : this.HoldingResources) {
+	            if(queue.transferPriority && (queue.waitQueue.size()!=0)) {
+	              if(effectivePriority < queue.pickNextThread().getEffectivePriority()) {
+	                effectivePriority = queue.pickNextThread().getEffectivePriority();
+	              }
+	            }
+	          }
+	          return effectivePriority;
+
 		}
 
 		/**
@@ -253,10 +270,10 @@ public class PriorityScheduler extends Scheduler {
 			this.priority = priority;
 
 			// implement me
-			this.effectivePriority = priority;
-			ChangePriority();
+			//this.effectivePriority = priority;
+			//ChangePriority();
 		}
-
+/*
 		public void ChangePriority(){
 			if (this.HoldingResources == null) return;
 			if (this.HoldingResources.isEmpty()) return;
@@ -275,8 +292,8 @@ public class PriorityScheduler extends Scheduler {
 						else Resource.effectivePriority = max;
 						Resource.ChangePriority();
 					}
-
-		}
+*/
+		//}
 
 		/**
 		 * Called when <tt>waitForAccess(thread)</tt> (where <tt>thread</tt> is
@@ -293,7 +310,7 @@ public class PriorityScheduler extends Scheduler {
 		public void waitForAccess(PriorityQueue waitQueue) {
 			// implement me
 			waitQueue.waitQueue.add(this);
-			if(waitQueue.transferPriority==true)
+			/*if(waitQueue.transferPriority==true)
 			{
 				HoldingResources.add(waitQueue);
 				if(waitQueue.resource != null)
@@ -303,6 +320,7 @@ public class PriorityScheduler extends Scheduler {
 				}
 
 			}
+			*/
 		}
 
 		/**
@@ -317,7 +335,8 @@ public class PriorityScheduler extends Scheduler {
 		 */
 		public void acquire(PriorityQueue waitQueue) {
 			// implement me
-			if (waitQueue.transferPriority)
+			waitQueue.waitQueue.remove(this);
+			this.HoldingResources.add(waitQueue);
 			waitQueue.resource = this;
 
 		}
@@ -328,10 +347,10 @@ public class PriorityScheduler extends Scheduler {
 		/** The priority of the associated thread. */
 		protected int priority;
 
-		protected int effectivePriority = priorityDefault;
+		//protected int effectivePriority = priorityDefault;
 		protected long age = Machine.timer().getTime();
 		protected LinkedList<PriorityQueue> HoldingResources = new LinkedList<PriorityQueue>();
-		protected LinkedList<ThreadState> waitingthreadstates = new LinkedList<ThreadState>();
+		//protected LinkedList<ThreadState> waitingthreadstates = new LinkedList<ThreadState>();
 
 	}
 }
